@@ -305,6 +305,8 @@
         position: relative;
         z-index: 1;
         font-family: "Courier New", monospace;
+        word-break: break-word;
+        line-height: 1.2;
       }
 
       .result-label {
@@ -538,6 +540,7 @@
         animation: slideInRight 0.3s ease;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         backdrop-filter: blur(10px);
+        max-width: 90vw;
       }
 
       @keyframes slideInRight {
@@ -576,33 +579,198 @@
         animation: pulse 0.4s ease-in-out;
       }
 
-      /* Responsividade */
+      /* ===== RESPONSIVIDADE MELHORADA PARA TELAS PEQUENAS ===== */
       @media (max-width: 768px) {
         .main-layout {
           grid-template-columns: 1fr;
+          /* Layout em coluna única no mobile */
+          grid-template-rows: auto auto;
         }
 
         .sorteio-area {
-          padding: 20px;
+          padding: 16px;
+          max-height: 60vh;
+          /* Altura máxima para a área de sorteio */
+          overflow-y: auto;
         }
 
         .historico-area {
-          padding: 20px;
+          padding: 16px;
           border-left: none;
           border-top: 1px solid rgba(102, 126, 234, 0.2);
+          max-height: 40vh;
+          /* Histórico com altura fixa no mobile */
+          min-height: 200px;
         }
 
         .result-number {
-          font-size: 60px;
-          letter-spacing: 5px;
+          font-size: 48px !important;
+          /* Redução significativa para caber na tela */
+          letter-spacing: 3px;
+          word-break: break-word;
         }
 
         .logo-container {
-          padding: 8px 20px;
+          padding: 6px 16px;
         }
 
         .logo-text {
+          font-size: 12px;
+        }
+
+        .logo-area {
+          padding: 10px 16px;
+        }
+
+        .number-display {
+          padding: 25px 15px;
+          margin-bottom: 20px;
+        }
+
+        .config-grid {
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+
+        .input-group input {
+          padding: 10px;
+          font-size: 16px;
+        }
+
+        .timer-control {
+          gap: 8px;
+        }
+
+        .timer-btn {
+          width: 38px;
+          height: 38px;
+          font-size: 18px;
+        }
+
+        .timer-value {
+          font-size: 18px;
+        }
+
+        .btn {
+          padding: 12px;
+          font-size: 13px;
+        }
+
+        .title p {
+          font-size: 11px;
+        }
+
+        /* Garantir que o primeiro número sorteado seja visível */
+        .sorteio-area {
+          scroll-behavior: smooth;
+        }
+
+        /* Quando um novo número é sorteado, rola suavemente para o topo */
+        .sorteio-area.scroll-to-top {
+          scroll-behavior: smooth;
+        }
+      }
+
+      /* Para telas muito pequenas (celulares com até 480px) */
+      @media (max-width: 480px) {
+        .sorteio-area {
+          padding: 12px;
+          max-height: 55vh;
+        }
+
+        .historico-area {
+          padding: 12px;
+          max-height: 45vh;
+        }
+
+        .result-number {
+          font-size: 38px !important;
+          letter-spacing: 2px;
+        }
+
+        .number-display {
+          padding: 20px 12px;
+        }
+
+        .config-grid {
+          gap: 10px;
+        }
+
+        .input-group label {
+          font-size: 11px;
+        }
+
+        .input-group input {
+          padding: 8px;
           font-size: 14px;
+        }
+
+        .timer-btn {
+          width: 34px;
+          height: 34px;
+          font-size: 16px;
+        }
+
+        .timer-value {
+          font-size: 16px;
+        }
+
+        .btn {
+          padding: 10px;
+          font-size: 12px;
+        }
+
+        .historico-item {
+          padding: 8px 12px;
+        }
+
+        .historico-numero {
+          font-size: 15px;
+        }
+
+        .historico-data {
+          font-size: 9px;
+        }
+
+        .historico-header {
+          margin-bottom: 12px;
+        }
+
+        .clear-history {
+          font-size: 10px;
+          padding: 4px 8px;
+        }
+      }
+
+      /* Para telas de altura pequena (landscape ou dispositivos compactos) */
+      @media (max-height: 700px) and (orientation: landscape) {
+        .sorteio-area {
+          max-height: 55vh;
+        }
+
+        .historico-area {
+          max-height: 45vh;
+        }
+
+        .number-display {
+          padding: 15px 15px;
+          margin-bottom: 15px;
+        }
+
+        .result-number {
+          font-size: 40px !important;
+        }
+
+        .config-grid {
+          margin-bottom: 15px;
+        }
+
+        .timer-section {
+          margin-bottom: 15px;
+        }
+
+        .logo-area {
+          padding: 8px 20px;
         }
       }
 
@@ -618,17 +786,15 @@
       <!-- Área do Logo Premium -->
       <div class="logo-area">
         <div class="logo-container">
-          <!-- <img src="./logo.png" alt="Logo" />-->
-          <span class="logo-text"> SORTEADOR ELETRÔNICO</span>
+          <span class="logo-text">SORTEADOR ELETRÔNICO</span>
         </div>
       </div>
 
       <!-- Layout principal -->
       <div class="main-layout">
         <!-- Coluna Esquerda - Sorteio -->
-        <div class="sorteio-area">
+        <div class="sorteio-area" id="sorteioArea">
           <div class="title">
-            <!--<h2>🎲 SORTEADOR ELETRÔNICO 🎲</h2>-->
             <p>Configure o intervalo e o tempo para mais emoção</p>
           </div>
 
@@ -672,9 +838,6 @@
             >
               🎲 SORTEAR
             </button>
-            <!--  <button class="btn btn-secondary" onclick="limparSorteio()">
-              🗑️ LIMPAR
-            </button>-->
           </div>
         </div>
 
@@ -840,6 +1003,20 @@
         adicionarAoHistorico(numeroSorteado);
         resetarBotoes();
 
+        // EM TELAS PEQUENAS: ROLAR PARA O TOPO DA ÁREA DE SORTEIO PARA VER O NÚMERO SORTEADO
+        if (window.innerWidth <= 768) {
+          const sorteioArea = document.getElementById("sorteioArea");
+          if (sorteioArea) {
+            // Pequeno delay para garantir que o DOM foi atualizado
+            setTimeout(() => {
+              sorteioArea.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+            }, 50);
+          }
+        }
+
         if (tempoRestante === 0) {
           setTimeout(() => {
             if (!timerAtivo) resultElement.textContent = "???";
@@ -881,22 +1058,22 @@
 
         if (historico.length === 0) {
           historicoLista.innerHTML = `
-                    <div class="vazio-mensagem">
-                        ✨ Nenhum número sorteado<br>
-                        Clique em SORTEAR para começar
-                    </div>
-                `;
+          <div class="vazio-mensagem">
+            ✨ Nenhum número sorteado<br>
+            Clique em SORTEAR para começar
+          </div>
+        `;
           return;
         }
 
         historicoLista.innerHTML = historico
           .map(
             (item) => `
-                <div class="historico-item">
-                    <div class="historico-numero">🎲 ${item.numero}</div>
-                    <div class="historico-data">${item.data} ${item.hora}</div>
-                </div>
-            `,
+        <div class="historico-item">
+          <div class="historico-numero">🎲 ${item.numero}</div>
+          <div class="historico-data">${item.data} ${item.hora}</div>
+        </div>
+      `,
           )
           .join("");
 
