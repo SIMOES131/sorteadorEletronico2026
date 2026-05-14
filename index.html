@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Sorteador Premium - Centro Educacional de Barra Nova</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        height: 100vh;
+        width: 100vw;
+        background: linear-gradient(
+          135deg,
+          #0f0c29 0%,
+          #302b63 50%,
+          #24243e 100%
+        );
+        font-family: "Segoe UI", "Poppins", "Arial", sans-serif;
+        overflow: hidden;
+        position: fixed;
+      }
+
+      /* Container principal - ocupa 100% da tela sem scroll */
+      .container {
+        height: 100vh;
+        width: 100vw;
+        background: rgba(255, 255, 255, 0.97);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Layout de 2 colunas sem scroll */
+      .main-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      /* Coluna esquerda - sorteio */
+      .sorteio-area {
+        padding: 25px 35px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+
+      .sorteio-area::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      .sorteio-area::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .sorteio-area::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+      }
+
+      /* Coluna direita - histórico */
+      .historico-area {
+        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid rgba(102, 126, 234, 0.2);
+        overflow: hidden;
+      }
+
+      /* Área do Logo - design premium */
+      .logo-area {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px 30px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .logo-area::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 70%
+        );
+        animation: rotate 20s linear infinite;
+      }
+
+      .logo-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 12px 25px;
+        display: inline-flex;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+        gap: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+        width: auto;
+        margin: 0 auto;
+      }
+
+      .logo-container img {
+        max-height: 60px;
+        width: auto;
+        object-fit: contain;
+      }
+
+      .logo-text {
+        font-size: 18px;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* Título com efeito glassmorphism */
+      .title {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .title h2 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .title p {
+        color: #888;
+        font-size: 13px;
+        margin-top: 5px;
+      }
+
+      /* Configurações com design moderno */
+      .config-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .input-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .input-group input {
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: white;
+        color: #667eea;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: scale(1.02);
+      }
+
+      /* Timer estilizado */
+      .timer-section {
+        margin-bottom: 25px;
+      }
+
+      .timer-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .timer-control {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: white;
+        padding: 6px;
+        border-radius: 40px;
+        border: 2px solid #e0e0e0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .timer-value {
+        flex: 1;
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .timer-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .timer-btn:hover {
+        transform: scale(1.1) rotate(180deg);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      /* Display do número - efeito 3D */
+      .number-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 30px;
+        padding: 40px 20px;
+        margin-bottom: 25px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease;
+      }
+
+      .number-display:hover {
+        transform: translateY(-5px);
+      }
+
+      .number-display::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.2) 0%,
+          transparent 70%
+        );
+        animation: rotate 15s linear infinite;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result-number {
+        font-size: 110px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+        letter-spacing: 8px;
+        position: relative;
+        z-index: 1;
+        font-family: "Courier New", monospace;
+      }
+
+      .result-label {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 13px;
+        margin-top: 10px;
+        position: relative;
+        z-index: 1;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-weight: 500;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        margin-top: 20px;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: white;
+        width: 0%;
+        transition: width linear;
+        border-radius: 2px;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      }
+
+      /* Botões com efeito glass */
+      .buttons-area {
+        display: flex;
+        gap: 15px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 30px;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .btn-primary:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.9);
+        color: #667eea;
+        border: 2px solid #667eea;
+      }
+
+      .btn-secondary:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-2px);
+        border-color: transparent;
+      }
+
+      /* Histórico estilizado */
+      .historico-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+      }
+
+      .historico-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .historico-count {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: bold;
+      }
+
+      .clear-history {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .clear-history:hover {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        transform: scale(1.05);
+      }
+
+      /* Lista de histórico - scroll suave */
+      .historico-lista {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-right: 5px;
+      }
+
+      .historico-lista::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      .historico-lista::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .historico-lista::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+      }
+
+      .historico-item {
+        background: white;
+        padding: 12px 15px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        animation: slideIn 0.3s ease;
+      }
+
+      .historico-item:hover {
+        transform: translateX(-5px) scale(1.02);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+      }
+
+      .historico-numero {
+        font-size: 18px;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .historico-data {
+        font-size: 11px;
+        color: #999;
+        font-family: monospace;
+      }
+
+      .vazio-mensagem {
+        text-align: center;
+        color: #bbb;
+        padding: 40px 20px;
+        font-size: 13px;
+      }
+
+      /* Alertas estilosos */
+      .alert-repetido {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: bold;
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.08);
+        }
+      }
+
+      .pulse-animation {
+        animation: pulse 0.4s ease-in-out;
+      }
+
+      /* Responsividade */
+      @media (max-width: 768px) {
+        .main-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .sorteio-area {
+          padding: 20px;
+        }
+
+        .historico-area {
+          padding: 20px;
+          border-left: none;
+          border-top: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .result-number {
+          font-size: 60px;
+          letter-spacing: 5px;
+        }
+
+        .logo-container {
+          padding: 8px 20px;
+        }
+
+        .logo-text {
+          font-size: 14px;
+        }
+      }
+
+      @media (min-width: 1200px) {
+        .result-number {
+          font-size: 130px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Área do Logo Premium -->
+      <div class="logo-area">
+        <div class="logo-container">
+          <!-- <img src="./logo.png" alt="Logo" />-->
+          <span class="logo-text"> SORTEADOR ELETRÔNICO</span>
+        </div>
+      </div>
+
+      <!-- Layout principal -->
+      <div class="main-layout">
+        <!-- Coluna Esquerda - Sorteio -->
+        <div class="sorteio-area">
+          <div class="title">
+            <!--<h2>🎲 SORTEADOR ELETRÔNICO 🎲</h2>-->
+            <p>Configure o intervalo e o tempo para mais emoção</p>
+          </div>
+
+          <!-- Configurações -->
+          <div class="config-grid">
+            <div class="input-group">
+              <label>🔽 Mínimo</label>
+              <input type="number" id="minNumber" value="1" step="1" />
+            </div>
+            <div class="input-group">
+              <label>🔼 Máximo</label>
+              <input type="number" id="maxNumber" value="100" step="1" />
+            </div>
+          </div>
+
+          <!-- Timer -->
+          <div class="timer-section">
+            <div class="timer-label">⏱️ Tempo de contagem</div>
+            <div class="timer-control">
+              <button class="timer-btn" onclick="ajustarTimer(-0.5)">−</button>
+              <div class="timer-value"><span id="timerValue">0</span>s</div>
+              <button class="timer-btn" onclick="ajustarTimer(0.5)">+</button>
+            </div>
+          </div>
+
+          <!-- Display -->
+          <div class="number-display">
+            <div class="result-number" id="resultNumber">???</div>
+            <div class="result-label">🎯 NÚMERO SORTEADO 🎯</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div class="buttons-area">
+            <button
+              class="btn btn-primary"
+              id="sortearBtn"
+              onclick="iniciarSorteio()"
+            >
+              🎲 SORTEAR
+            </button>
+            <!--  <button class="btn btn-secondary" onclick="limparSorteio()">
+              🗑️ LIMPAR
+            </button>-->
+          </div>
+        </div>
+
+        <!-- Coluna Direita - Histórico -->
+        <div class="historico-area">
+          <div class="historico-header">
+            <div class="historico-title">
+              📋 SORTEADOS
+              <span class="historico-count" id="historicoCount">0</span>
+            </div>
+            <button class="clear-history" onclick="limparHistorico()">
+              🗑️ Limpar tudo
+            </button>
+          </div>
+          <div class="historico-lista" id="historicoLista">
+            <div class="vazio-mensagem">
+              ✨ Nenhum número sorteado<br />
+              Clique em SORTEAR para começar
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let historico = [];
+      let numerosSorteados = new Set();
+      let timerAtivo = false;
+      let tempoRestante = 0;
+      let intervaloId = null;
+
+      window.ajustarTimer = function (adjustment) {
+        if (timerAtivo) return;
+
+        let novoValor = tempoRestante + adjustment;
+        if (novoValor < 0) novoValor = 0;
+        if (novoValor > 10) novoValor = 10;
+
+        tempoRestante = parseFloat(novoValor.toFixed(1));
+        document.getElementById("timerValue").innerText = tempoRestante;
+      };
+
+      window.iniciarSorteio = function () {
+        if (timerAtivo) return;
+
+        const min = parseInt(document.getElementById("minNumber").value);
+        const max = parseInt(document.getElementById("maxNumber").value);
+
+        const totalNumeros = max - min + 1;
+        if (numerosSorteados.size >= totalNumeros) {
+          mostrarAlerta(
+            "✨ Todos os números já foram sorteados! Limpe o histórico para continuar.",
+            "#ff6b6b",
+          );
+          return;
+        }
+
+        if (tempoRestante === 0) {
+          realizarSorteio();
+        } else {
+          iniciarTimer();
+        }
+      };
+
+      function mostrarAlerta(mensagem, cor = "#ff6b6b") {
+        const alerta = document.createElement("div");
+        alerta.className = "alert-repetido";
+        alerta.style.background = `linear-gradient(135deg, ${cor} 0%, ${cor}dd 100%)`;
+        alerta.textContent = mensagem;
+        document.body.appendChild(alerta);
+
+        setTimeout(() => {
+          alerta.style.animation = "slideInRight 0.3s reverse";
+          setTimeout(() => alerta.remove(), 300);
+        }, 3000);
+      }
+
+      function iniciarTimer() {
+        timerAtivo = true;
+        const sortearBtn = document.getElementById("sortearBtn");
+        sortearBtn.disabled = true;
+        sortearBtn.innerHTML = "⏳ SORTEANDO...";
+
+        let tempo = tempoRestante;
+        const progressFill = document.getElementById("progressFill");
+        const resultElement = document.getElementById("resultNumber");
+        resultElement.textContent = tempo.toFixed(1);
+
+        intervaloId = setInterval(() => {
+          tempo -= 0.1;
+
+          if (tempo <= 0) {
+            clearInterval(intervaloId);
+            realizarSorteio();
+          } else {
+            resultElement.textContent = tempo.toFixed(1);
+            const progresso = ((tempoRestante - tempo) / tempoRestante) * 100;
+            progressFill.style.width = `${progresso}%`;
+          }
+        }, 100);
+      }
+
+      function realizarSorteio() {
+        timerAtivo = false;
+
+        if (intervaloId) {
+          clearInterval(intervaloId);
+          intervaloId = null;
+        }
+
+        const minInput = document.getElementById("minNumber");
+        const maxInput = document.getElementById("maxNumber");
+        const resultElement = document.getElementById("resultNumber");
+        const progressFill = document.getElementById("progressFill");
+
+        let min = parseInt(minInput.value);
+        let max = parseInt(maxInput.value);
+
+        if (isNaN(min)) min = 1;
+        if (isNaN(max)) max = 100;
+
+        if (min >= max) {
+          alert("O número mínimo deve ser menor que o máximo!");
+          resetarBotoes();
+          return;
+        }
+
+        const totalNumeros = max - min + 1;
+        if (numerosSorteados.size >= totalNumeros) {
+          mostrarAlerta("🎲 FIM! Todos os números foram sorteados!", "#ffa500");
+          resultElement.textContent = "FIM!";
+          resetarBotoes();
+          setTimeout(() => {
+            if (!timerAtivo) resultElement.textContent = "???";
+          }, 2000);
+          return;
+        }
+
+        let numeroSorteado;
+        let tentativas = 0;
+        const maxTentativas = 1000;
+
+        do {
+          numeroSorteado = Math.floor(Math.random() * (max - min + 1)) + min;
+          tentativas++;
+          if (tentativas > maxTentativas) {
+            mostrarAlerta("Erro ao gerar número!", "#ff6b6b");
+            resetarBotoes();
+            return;
+          }
+        } while (numerosSorteados.has(numeroSorteado));
+
+        numerosSorteados.add(numeroSorteado);
+
+        resultElement.classList.add("pulse-animation");
+        resultElement.textContent = numeroSorteado;
+
+        setTimeout(() => {
+          resultElement.classList.remove("pulse-animation");
+        }, 400);
+
+        progressFill.style.width = "0%";
+        adicionarAoHistorico(numeroSorteado);
+        resetarBotoes();
+
+        if (tempoRestante === 0) {
+          setTimeout(() => {
+            if (!timerAtivo) resultElement.textContent = "???";
+          }, 2000);
+        }
+      }
+
+      function resetarBotoes() {
+        const sortearBtn = document.getElementById("sortearBtn");
+        sortearBtn.disabled = false;
+        sortearBtn.innerHTML = "🎲 SORTEAR";
+        timerAtivo = false;
+
+        if (intervaloId) {
+          clearInterval(intervaloId);
+          intervaloId = null;
+        }
+      }
+
+      function adicionarAoHistorico(numero) {
+        const dataHora = new Date();
+        const horaFormatada = dataHora.toLocaleTimeString("pt-BR");
+        const dataFormatada = dataHora.toLocaleDateString("pt-BR");
+
+        historico.unshift({
+          numero: numero,
+          data: dataFormatada,
+          hora: horaFormatada,
+        });
+
+        atualizarHistorico();
+      }
+
+      function atualizarHistorico() {
+        const historicoLista = document.getElementById("historicoLista");
+        const historicoCount = document.getElementById("historicoCount");
+
+        historicoCount.textContent = historico.length;
+
+        if (historico.length === 0) {
+          historicoLista.innerHTML = `
+                    <div class="vazio-mensagem">
+                        ✨ Nenhum número sorteado<br>
+                        Clique em SORTEAR para começar
+                    </div>
+                `;
+          return;
+        }
+
+        historicoLista.innerHTML = historico
+          .map(
+            (item) => `
+                <div class="historico-item">
+                    <div class="historico-numero">🎲 ${item.numero}</div>
+                    <div class="historico-data">${item.data} ${item.hora}</div>
+                </div>
+            `,
+          )
+          .join("");
+
+        historicoLista.scrollTop = 0;
+      }
+
+      window.limparSorteio = function () {
+        if (timerAtivo) {
+          mostrarAlerta("⏳ Aguarde o sorteio terminar!", "#ffa500");
+          return;
+        }
+
+        document.getElementById("resultNumber").textContent = "???";
+        document.getElementById("progressFill").style.width = "0%";
+
+        const display = document.querySelector(".number-display");
+        display.style.transform = "scale(0.98)";
+        setTimeout(() => {
+          display.style.transform = "scale(1)";
+        }, 200);
+      };
+
+      window.limparHistorico = function () {
+        if (timerAtivo) {
+          mostrarAlerta("⏳ Aguarde o sorteio terminar!", "#ffa500");
+          return;
+        }
+
+        if (
+          confirm(
+            "⚠️ Limpar todo o histórico?\n\nIsso permitirá sortear novos números.",
+          )
+        ) {
+          historico = [];
+          numerosSorteados.clear();
+          atualizarHistorico();
+          document.getElementById("resultNumber").textContent = "???";
+          mostrarAlerta("✅ Histórico limpo com sucesso!", "#51cf66");
+        }
+      };
+
+      document
+        .getElementById("minNumber")
+        .addEventListener("change", function () {
+          let value = parseInt(this.value);
+          let maxValue = parseInt(document.getElementById("maxNumber").value);
+
+          if (value >= maxValue) this.value = maxValue - 1;
+          if (value < 0) this.value = 0;
+        });
+
+      document
+        .getElementById("maxNumber")
+        .addEventListener("change", function () {
+          let value = parseInt(this.value);
+          let minValue = parseInt(document.getElementById("minNumber").value);
+
+          if (value <= minValue) this.value = minValue + 1;
+        });
+
+      tempoRestante = 0;
+      document.getElementById("timerValue").innerText = "0";
+    </script>
+  </body>
+</html>
